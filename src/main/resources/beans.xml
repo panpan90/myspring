@@ -3,23 +3,107 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:tx="http://www.springframework.org/schema/tx" 
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd">
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+	    http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+	    http://www.springframework.org/schema/tx 
+	    http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
         
         <context:annotation-config/>
+        <aop:aspectj-autoproxy/>
 
 	<bean
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations" value="classpath:config.properties" />
 	</bean>
 
-	<bean id="person" class="com.bucket.myspring.model.Person">
+	<!-- <bean id="person" class="com.bucket.myspring.model.Person">
 		<property name="name" value="chengcanming"/>
 		<property name="password" value="${password}" />
+	</bean> -->
+	
+	<!-- <bean id="student" class="com.bucket.myspring.model.Student" /> -->
+	
+	<bean id="springAopTest" class="com.bucket.myspring.aop.SpringAopTest" />
+	
+	<aop:config>
+		<aop:aspect id="myAspect" ref="aopAspect" >
+			<aop:pointcut expression="execution(* com.bucket.myspring.aop.springdemo..*.*(..))" id="myPointCut"/>
+			<aop:around method="myAspect2" pointcut-ref="myPointCut"/>
+			<aop:around method="myAspect" pointcut-ref="myPointCut"/>
+		</aop:aspect>
+	</aop:config>
+	
+	<bean id="aopAspect" class="com.bucket.myspring.aop.AopAspect"/>
+	
+	
+	<!-- this is the object that will be proxied by Spring's AOP infrastructure -->
+    <bean id="fooService" class="com.bucket.myspring.aop.springdemo.DefaultFooService"/>
+
+    <!-- this is the actual advice itself -->
+    <bean id="profiler" class="com.bucket.myspring.aop.springdemo.SimpleProfiler"/>
+
+    <aop:config>
+        <aop:aspect ref="profiler">
+
+            <aop:pointcut id="theExecutionOfSomeFooServiceMethod"
+                expression="execution(* com.bucket.myspring.aop.springdemo.FooService.getFoo(String,int))
+                and args(name, age)"/>
+
+            <aop:around pointcut-ref="theExecutionOfSomeFooServiceMethod"
+                method="profile"/>
+
+        </aop:aspect>
+    </aop:config>
+    
+	
+<!-- 	<aop:config>
+		<aop:pointcut expression="execution(* com.bucket.myspring.aop.jdkproxy.*.*(..))" id="jdkPointCut"/>
+		<aop:advisor advice-ref="jdkIntercept" pointcut-ref="jdkPointCut"/> 
+	</aop:config>
+	
+	<bean id="jdkIntercept" class="com.bucket.myspring.aop.jdkproxy.JDKIntercept" />
+	<bean id="jdkProxyService" class="com.bucket.myspring.aop.jdkproxy.JDKProxyService" /> -->
+	
+	
+	<aop:config>
+		<aop:pointcut expression="execution(* com.bucket.myspring.aop.advice.*.*(..))" id="advicePointCut"/>
+		<aop:advisor advice-ref="myAdvice" pointcut-ref="advicePointCut"/> 
+		<aop:advisor advice-ref="myBeforeAdvise" pointcut-ref="advicePointCut"/>
+	</aop:config>
+	
+	<bean id="myAdvice" class="com.bucket.myspring.aop.advice.MyAdvice" />
+	<bean id="myBeforeAdvise" class="com.bucket.myspring.aop.advice.MyBeforeAdvise"/>
+	<bean id="userService" class="com.bucket.myspring.aop.advice.UserServiceImpl" />
+
+
+	<bean id="debugInterceptor" class="com.bucket.myspring.aop.cglibproxy.CglibInterceptor" />
+	<bean id="myAdvisor" class="com.bucket.myspring.aop.cglibproxy.MyAdvised">
+		<!-- <property name="someProperty" value="Custom string property value" /> -->
+	</bean>
+	<bean id="cglibProxy" class="com.bucket.myspring.aop.cglibproxy.CglibProxy" />	
+	
+
+	<bean id="cglib" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<!-- <property name="proxyInterfaces" value="com.mycompany.Person" /> -->
+		<!-- Use inner bean, not local reference to target -->
+		<property name="target" ref="cglibProxy">
+			<!-- <bean class="com.mycompany.PersonImpl">
+				<property name="name" value="Tony" />
+				<property name="age" value="51" />
+			</bean> -->
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>myAdvisor</value>
+				<value>debugInterceptor</value>
+			</list>
+		</property>
 	</bean>
 	
-	<bean id="student" class="com.bucket.myspring.model.Student" />
-
 </beans>
