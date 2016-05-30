@@ -32,7 +32,7 @@
 	<bean id="springAopTest" class="com.bucket.myspring.aop.SpringAopTest" />
 	
 	<aop:config>
-		<aop:aspect id="myAspect" ref="aopAspect" >
+		<aop:aspect id="myAspect12" ref="aopAspect" >
 			<aop:pointcut expression="execution(* com.bucket.myspring.aop.springdemo..*.*(..))" id="myPointCut"/>
 			<aop:around method="myAspect2" pointcut-ref="myPointCut"/>
 			<aop:around method="myAspect" pointcut-ref="myPointCut"/>
@@ -105,5 +105,8 @@
 			</list>
 		</property>
 	</bean>
+	
+<!-- 	<bean id="personService" class="com.bucket.myspring.aop.aspj.PersonServiceImpll" /> -->
+<!-- 	<bean id="ddd" class="com.bucket.myspring.aop.aspj.MyAspect" /> -->
 	
 </beans>
